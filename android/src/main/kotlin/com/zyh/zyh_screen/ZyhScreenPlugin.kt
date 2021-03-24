@@ -1,10 +1,12 @@
 package com.zyh.zyh_screen
 
 import android.app.Activity
+import android.content.res.Resources
 import android.provider.Settings
 import android.provider.Settings.SettingNotFoundException
 import android.view.WindowManager
 import androidx.annotation.NonNull
+import androidx.core.math.MathUtils
 import io.flutter.embedding.engine.plugins.FlutterPlugin
 import io.flutter.embedding.engine.plugins.activity.ActivityAware
 import io.flutter.embedding.engine.plugins.activity.ActivityPluginBinding
@@ -12,6 +14,7 @@ import io.flutter.plugin.common.MethodCall
 import io.flutter.plugin.common.MethodChannel
 import io.flutter.plugin.common.MethodChannel.MethodCallHandler
 import io.flutter.plugin.common.MethodChannel.Result
+
 
 /** ZyhScreenPlugin */
 class ZyhScreenPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
@@ -65,14 +68,68 @@ class ZyhScreenPlugin: FlutterPlugin, MethodCallHandler, ActivityAware {
     }
     var result: Float = activity!!.window.attributes.screenBrightness
     if (result < 0) { // the application is using the system brightness
-      try {
-        result = Settings.System.getInt(activity?.contentResolver, Settings.System.SCREEN_BRIGHTNESS) / 255.toFloat()
-      } catch (e: SettingNotFoundException) {
-        result = 1.0f
-        e.printStackTrace()
+      // 取到了默认值
+      val maxBrightness = getBrightnessMax();
+      if (maxBrightness != 255) {
+        try {
+          val current = Settings.System.getInt(activity?.contentResolver, Settings.System.SCREEN_BRIGHTNESS)
+          if (current <= maxBrightness) {
+            result = current * 1f / maxBrightness
+          }
+        } catch (ignore: java.lang.Exception) {
+        }
+      } else {
+        try {
+          result = Settings.System.getInt(activity?.contentResolver, Settings.System.SCREEN_BRIGHTNESS) / 255.toFloat()
+        } catch (e: SettingNotFoundException) {
+          result = 1.0f
+          e.printStackTrace()
+        }
       }
     }
+    if (result.isNaN() || result < 0) {
+      // 如果没有取值成功，那么就默认设置为一半亮度，防止突然变得很亮或很暗
+      result = 0.5f
+    }
     return result
+  }
+
+  private fun changeBrightness(change: Float) {
+    if (activity == null) {
+      return
+    }
+    var old: Float = activity!!.window.attributes.screenBrightness
+    val none = WindowManager.LayoutParams.BRIGHTNESS_OVERRIDE_NONE // -1.0f
+    if (old == none) {
+      // 取到了默认值
+      try {
+        val current = Settings.System.getInt(activity?.contentResolver, Settings.System.SCREEN_BRIGHTNESS)
+        if (current <= getBrightnessMax()) {
+          old = current * 1f / getBrightnessMax()
+        }
+      } catch (ignore: java.lang.Exception) {
+      }
+    }
+    if (old == none || old <= 0) {
+      // 如果没有取值成功，那么就默认设置为一半亮度，防止突然变得很亮或很暗
+      old = 0.5f
+    }
+    val newBrightness = MathUtils.clamp(old + change, 0.01f, 1f)
+    val params: WindowManager.LayoutParams = activity!!.window.attributes
+    params.screenBrightness = newBrightness
+    activity!!.window.attributes = params
+  }
+
+  private fun getBrightnessMax(): Int {
+    try {
+      val system: Resources = Resources.getSystem()
+      val resId: Int = system.getIdentifier("config_screenBrightnessSettingMaximum", "integer", "android")
+      if (resId != 0) {
+        return system.getInteger(resId)
+      }
+    } catch (ignore: Exception) {
+    }
+    return 255
   }
 
   override fun onDetachedFromEngine(@NonNull binding: FlutterPlugin.FlutterPluginBinding) {

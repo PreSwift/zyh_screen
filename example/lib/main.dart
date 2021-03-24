@@ -21,6 +21,7 @@ class _MyAppState extends State<MyApp> {
   initPlatformState() async {
     bool keptOn = await ZyhScreen.isKeptOn;
     double brightness = await ZyhScreen.brightness;
+    print("Brightness:========" + brightness.toString());
     setState((){
       _isKeptOn = keptOn;
       _brightness = brightness;

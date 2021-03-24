@@ -1,0 +1,22 @@
+PODS:
+  - Flutter (1.0.0)
+  - zyh_screen (0.0.1):
+    - Flutter
+
+DEPENDENCIES:
+  - Flutter (from `Flutter`)
+  - zyh_screen (from `.symlinks/plugins/zyh_screen/ios`)
+
+EXTERNAL SOURCES:
+  Flutter:
+    :path: Flutter
+  zyh_screen:
+    :path: ".symlinks/plugins/zyh_screen/ios"
+
+SPEC CHECKSUMS:
+  Flutter: 434fef37c0980e73bb6479ef766c45957d4b510c
+  zyh_screen: e0f344c2c3cea9bff9d845fa0ed33463b3edb331
+
+PODFILE CHECKSUM: aafe91acc616949ddb318b77800a7f51bffa2a4c
+
+COCOAPODS: 1.10.0.rc.1

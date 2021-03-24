@@ -9,24 +9,25 @@ public class SwiftZyhScreenPlugin: NSObject, FlutterPlugin {
   }
 
   public func handle(_ call: FlutterMethodCall, result: @escaping FlutterResult) {
-    if ([@"brightness" isEqualToString:call.method]) {
-        result([NSNumber numberWithFloat:[UIScreen mainScreen].brightness]);
-      }
-      else if ([@"setBrightness" isEqualToString:call.method]) {
-        NSNumber *brightness = call.arguments[@"brightness"];
-        [[UIScreen mainScreen] setBrightness:brightness.floatValue];
-        result(nil);
-      }
-      else if ([@"isKeptOn" isEqualToString:call.method]) {
-        bool isIdleTimerDisabled =  [[UIApplication sharedApplication] isIdleTimerDisabled];
-        result([NSNumber numberWithBool:isIdleTimerDisabled]);
-      }
-      else if ([@"keepOn" isEqualToString:call.method]) {
-        NSNumber *b = call.arguments[@"on"];
-        [[UIApplication sharedApplication] setIdleTimerDisabled:b.boolValue];
-      }
-      else {
-        result(FlutterMethodNotImplemented);
-      }
+    if ("brightness" == call.method) {
+            result(UIScreen.main.brightness)
+        }
+        else if ("setBrightness" == call.method) {
+            let brightness: CGFloat = (call.arguments as! Dictionary)["brightness", default: 1]
+            UIScreen.main.brightness = brightness
+            result(nil)
+        }
+        else if ("isKeptOn" == call.method) {
+            let isIdleTimerDisabled: Bool =  UIApplication.shared.isIdleTimerDisabled
+            result(isIdleTimerDisabled)
+        }
+        else if ("keepOn" == call.method) {
+            let b: Bool = (call.arguments as! Dictionary)["on", default: true]
+            UIApplication.shared.isIdleTimerDisabled = b
+            result(nil)
+        }
+        else {
+            result(FlutterMethodNotImplemented)
+        }
   }
 }
